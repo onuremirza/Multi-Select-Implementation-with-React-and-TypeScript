@@ -12,6 +12,7 @@ function App() {
   const [searchText, setSearchText] = useState("");
   const [dropList, setDropList] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleDrop = () => {
     if (dropList === "hidden") {
@@ -87,6 +88,7 @@ function App() {
         })
         .catch((error: any) => {
           setLoading(false);
+          setError(error.response.data.error);
           setData([]);
         });
     }
@@ -183,7 +185,9 @@ function App() {
           </ul>
         </div>
       ) : (
-        <div>There is Nothing</div>
+        <div>
+          <p>{error}</p>
+        </div>
       )}
       <Social />
     </div>
