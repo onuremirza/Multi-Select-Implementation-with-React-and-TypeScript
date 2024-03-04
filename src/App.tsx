@@ -120,6 +120,7 @@ function App() {
           id="search"
           type="text"
           onChange={getAPI}
+          placeholder="ex: Rick"
           className="text-xl min-w-36 border-2 border-black h-full w-full p-2 border-none outline-none"
         />
         {searchText && loading ? (
