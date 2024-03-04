@@ -125,7 +125,10 @@ function App() {
         {searchText && loading ? (
           <AiOutlineLoading3Quarters size={36} className={`animate-spin`} />
         ) : (
-          <button className="" onClick={handleDrop}>
+          <button
+            className={dropList === "hidden" ? "rotate-180" : ""}
+            onClick={handleDrop}
+          >
             <RiArrowDropDownFill size={36} className="box-border" />
           </button>
         )}
