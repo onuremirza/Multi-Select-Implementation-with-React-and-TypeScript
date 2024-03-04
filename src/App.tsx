@@ -61,6 +61,7 @@ function App() {
       ]);
     }
   };
+
   const handleCheckboxWithId = (id: any) => {
     if (checkboxStates.some((item: any) => item.id === id)) {
       // If character exists in checkboxStates, delete it
