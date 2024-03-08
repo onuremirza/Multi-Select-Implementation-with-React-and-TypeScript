@@ -13,6 +13,7 @@ function App() {
   const [dropList, setDropList] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [listOfSaves, setListOfSaves] = useState<any[]>([]);
 
   const handleDrop = () => {
     if (dropList === "hidden") {
@@ -25,6 +26,19 @@ function App() {
   const handleNavigate = (key: any) => {
     setCursor(key);
   };
+
+  useEffect(() => {
+    axios
+      .get(
+        "https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data"
+      )
+      .then((res: any) => {
+        if (res.data) {
+          setListOfSaves(res.data);
+          getFirstState(res.data);
+        }
+      });
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
@@ -45,16 +59,21 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
+    // eslint-disable-next-line
   }, [cursor, data, checkboxStates]);
 
   const handleCheckbox = (item: any) => {
     const character = data[item];
     if (checkboxStates.some((item: any) => item.id === character.id)) {
+      // delete DB
+      deleteSaves(character.id);
       // If character exists in checkboxStates, delete it
       setCheckboxStates((prevCheckboxStates) =>
         prevCheckboxStates.filter((item: any) => item.id !== character.id)
       );
     } else {
+      // Save DB
+      postSaves(character.id);
       // If character does not exist in checkboxStates, add it
       setCheckboxStates((prevCheckboxStates) => [
         ...prevCheckboxStates,
@@ -65,6 +84,8 @@ function App() {
 
   const handleCheckboxWithId = (id: any) => {
     if (checkboxStates.some((item: any) => item.id === id)) {
+      // delete DB
+      deleteSaves(id);
       // If character exists in checkboxStates, delete it
       setCheckboxStates((prevCheckboxStates) =>
         prevCheckboxStates.filter((item: any) => item.id !== id)
@@ -72,7 +93,7 @@ function App() {
     }
   };
 
-  const getAPI = async (event: any) => {
+  const getAPI = (event: any) => {
     setSearchText(event.target.value);
     setLoading(true);
     if (!event.target.value) {
@@ -94,6 +115,48 @@ function App() {
     }
   };
 
+  const getFirstState = (req: any) => {
+    axios.get("https://rickandmortyapi.com/api/character").then((res) => {
+      const data = res.data.results;
+      for (let i = 0; req.length > i; i++) {
+        // handleCheckbox(data[req[i].dataId - 1]);
+
+        setCheckboxStates((prevCheckboxStates) => [
+          ...prevCheckboxStates,
+          data[req[i].dataId - 1],
+        ]);
+      }
+    });
+  };
+
+  const postSaves = (data: any) => {
+    setLoading(true);
+    axios
+      .post(
+        `https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data/byId/${data}`
+      )
+      .then((res: any) => {
+        setLoading(false);
+      })
+      .catch((error: any) => {
+        setLoading(false);
+      });
+  };
+
+  const deleteSaves = (data: any) => {
+    setLoading(true);
+    axios
+      .delete(
+        `https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data/byId/${data}`
+      )
+      .then((res: any) => {
+        setLoading(false);
+      })
+      .catch((error: any) => {
+        setLoading(false);
+      });
+  };
+
   const highlightMatches = (name: string) => {
     const regex = new RegExp(searchText, "gi");
     return name.replace(
@@ -107,7 +170,10 @@ function App() {
       <div className="flex w-full p-2 border-[1px] rounded-xl border-black overflow-auto">
         <div className="gap-2 flex items-center">
           {checkboxStates.map((value: any, key: any) => (
-            <div className="flex gap-2 rounded-xl bg-gray-300 p-2 items-center text-nowrap ">
+            <div
+              key={key}
+              className="flex gap-2 rounded-xl bg-gray-300 p-2 items-center text-nowrap "
+            >
               {value.name}
               <div
                 onClick={() => handleCheckboxWithId(value.id)}
