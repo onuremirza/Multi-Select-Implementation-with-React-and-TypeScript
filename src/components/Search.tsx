@@ -11,7 +11,6 @@ function Search() {
   const [dropList, setDropList] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [listOfSaves, setListOfSaves] = useState<any[]>([]);
 
   const handleDrop = () => {
     if (dropList === "hidden") {
@@ -32,7 +31,6 @@ function Search() {
       )
       .then((res: any) => {
         if (res.data) {
-          setListOfSaves(res.data);
           getFirstState(res.data);
         }
       });
