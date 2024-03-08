@@ -28,7 +28,7 @@ function Search() {
   useEffect(() => {
     axios
       .get(
-        "https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data"
+        "https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data"
       )
       .then((res: any) => {
         if (res.data) {
@@ -131,7 +131,7 @@ function Search() {
     setLoading(true);
     axios
       .post(
-        `https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data/byId/${data}`
+        `https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data/byId/${data}`
       )
       .then((res: any) => {
         setLoading(false);
@@ -145,7 +145,7 @@ function Search() {
     setLoading(true);
     axios
       .delete(
-        `https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data/byId/${data}`
+        `https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data/byId/${data}`
       )
       .then((res: any) => {
         setLoading(false);
