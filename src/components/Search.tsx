@@ -1,12 +1,9 @@
-import "./App.css";
 import { RiArrowDropDownFill } from "react-icons/ri";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Social from "./components/Social";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import Search from "./components/Search";
 
-function App() {
+function Search() {
   const [data, setData] = useState<any[]>([]);
   const [cursor, setCursor] = useState(0);
   const [checkboxStates, setCheckboxStates] = useState<any[]>([]);
@@ -31,7 +28,7 @@ function App() {
   useEffect(() => {
     axios
       .get(
-        "https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data"
+        "https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data"
       )
       .then((res: any) => {
         if (res.data) {
@@ -134,7 +131,7 @@ function App() {
     setLoading(true);
     axios
       .post(
-        `https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data/byId/${data}`
+        `https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data/byId/${data}`
       )
       .then((res: any) => {
         setLoading(false);
@@ -148,7 +145,7 @@ function App() {
     setLoading(true);
     axios
       .delete(
-        `https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data/byId/${data}`
+        `https://multi-select-implementation-with-react-and-type-script.vercel.app/api/data/byId/${data}`
       )
       .then((res: any) => {
         setLoading(false);
@@ -256,10 +253,8 @@ function App() {
           <p>{error}</p>
         </div>
       )}
-      <Search />
-      <Social />
     </div>
   );
 }
 
-export default App;
+export default Search;
