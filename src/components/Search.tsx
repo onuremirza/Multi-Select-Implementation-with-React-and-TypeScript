@@ -1,43 +1,19 @@
 import { RiArrowDropDownFill } from "react-icons/ri";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { fetchData } from "../api";
 
 function Search() {
   const [data, setData] = useState<any[]>([]);
-  const [cursor, setCursor] = useState(0);
+  const [cursor, setCursor] = useState<number>(0);
   const [checkboxStates, setCheckboxStates] = useState<any[]>([]);
-  const [searchText, setSearchText] = useState("");
-  const [dropList, setDropList] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleDrop = () => {
-    if (dropList === "hidden") {
-      setDropList("");
-    } else {
-      setDropList("hidden");
-    }
-  };
-
-  const handleNavigate = (key: any) => {
-    setCursor(key);
-  };
+  const [searchText, setSearchText] = useState<string>("");
+  const [dropList, setDropList] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    axios
-      .get(
-        "https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data"
-      )
-      .then((res: any) => {
-        if (res.data) {
-          getFirstState(res.data);
-        }
-      });
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (event: any) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowDown") {
         setCursor((prevCursor) =>
           prevCursor < data.length - 1 ? prevCursor + 1 : prevCursor
@@ -55,102 +31,58 @@ function Search() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-    // eslint-disable-next-line
-  }, [cursor, data, checkboxStates]);
+  }, [cursor, data]);
 
-  const handleCheckbox = (item: any) => {
-    const character = data[item];
-    if (checkboxStates.some((item: any) => item.id === character.id)) {
-      // delete DB
-      deleteSaves(character.id);
-      // If character exists in checkboxStates, delete it
-      setCheckboxStates((prevCheckboxStates) =>
-        prevCheckboxStates.filter((item: any) => item.id !== character.id)
-      );
-    } else {
-      // Save DB
-      postSaves(character.id);
-      // If character does not exist in checkboxStates, add it
-      setCheckboxStates((prevCheckboxStates) => [
-        ...prevCheckboxStates,
-        character,
-      ]);
-    }
+  const handleCheckbox = (index: number) => {
+    const character = data[index];
+    const isChecked = checkboxStates.some((item) => item.id === character.id);
+    setCheckboxStates((prevCheckboxStates) =>
+      isChecked
+        ? prevCheckboxStates.filter((item) => item.id !== character.id)
+        : [...prevCheckboxStates, character]
+    );
   };
 
   const handleCheckboxWithId = (id: any) => {
-    if (checkboxStates.some((item: any) => item.id === id)) {
-      // delete DB
-      deleteSaves(id);
-      // If character exists in checkboxStates, delete it
-      setCheckboxStates((prevCheckboxStates) =>
-        prevCheckboxStates.filter((item: any) => item.id !== id)
-      );
-    }
+    setCheckboxStates((prevCheckboxStates) =>
+      prevCheckboxStates.filter((item) => item.id !== id)
+    );
   };
 
-  const getAPI = (event: any) => {
-    setSearchText(event.target.value);
+  const handleDrop = () => {
+    setDropList(dropList === "hidden" ? "" : "hidden");
+  };
+
+  const handleNavigate = (key: number) => {
+    setCursor(key);
+  };
+
+  const getAPI = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchText(value);
     setLoading(true);
-    if (!event.target.value) {
-      setData([]);
-    } else {
-      axios
-        .get(
-          `https://rickandmortyapi.com/api/character/?name=${event.target.value}`
-        )
-        .then((value: any) => {
-          setLoading(false);
-          setData(value.data.results);
-        })
-        .catch((error: any) => {
-          setLoading(false);
-          setError(error.response.data.error);
+
+    try {
+      if (!value) {
+        setData([]);
+      } else {
+        const searchData = await fetchData(value);
+        if (typeof searchData !== "object") {
+          setError(searchData);
           setData([]);
-        });
-    }
-  };
-
-  const getFirstState = (req: any) => {
-    axios.get("https://rickandmortyapi.com/api/character").then((res) => {
-      const data = res.data.results;
-      for (let i = 0; req.length > i; i++) {
-        // handleCheckbox(data[req[i].dataId - 1]);
-
-        setCheckboxStates((prevCheckboxStates) => [
-          ...prevCheckboxStates,
-          data[req[i].dataId - 1],
-        ]);
+        } else {
+          setData(searchData);
+          setError(""); // Clear any previous error message
+        }
       }
-    });
-  };
-
-  const postSaves = (data: any) => {
-    setLoading(true);
-    axios
-      .post(
-        `https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data/byId/${data}`
-      )
-      .then((res: any) => {
-        setLoading(false);
-      })
-      .catch((error: any) => {
-        setLoading(false);
-      });
-  };
-
-  const deleteSaves = (data: any) => {
-    setLoading(true);
-    axios
-      .delete(
-        `https://multi-select-implementation-with-react-and-type-script.vercel.app:3001/api/data/byId/${data}`
-      )
-      .then((res: any) => {
-        setLoading(false);
-      })
-      .catch((error: any) => {
-        setLoading(false);
-      });
+    } catch (error: any) {
+      setError(
+        error.response?.data?.error || "An error occurred while fetching data."
+      );
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const highlightMatches = (name: string) => {
@@ -168,12 +100,12 @@ function Search() {
           {checkboxStates.map((value: any, key: any) => (
             <div
               key={key}
-              className="flex gap-2 rounded-xl bg-gray-300 p-2 items-center text-nowrap "
+              className="flex gap-2 rounded-xl bg-gray-300 p-2 items-center text-nowrap"
             >
               {value.name}
               <div
                 onClick={() => handleCheckboxWithId(value.id)}
-                className="text-white bg-gray-400 rounded-md p-1"
+                className="text-white bg-gray-400 rounded-md p-1 cursor-pointer"
               >
                 X
               </div>
@@ -188,7 +120,7 @@ function Search() {
           className="text-xl min-w-36 border-2 border-black h-full w-full p-2 border-none outline-none"
         />
         {searchText && loading ? (
-          <AiOutlineLoading3Quarters size={36} className={`animate-spin`} />
+          <AiOutlineLoading3Quarters size={36} className="animate-spin" />
         ) : (
           <button
             className={dropList === "hidden" ? "rotate-180" : ""}
@@ -210,10 +142,10 @@ function Search() {
                 key={key}
                 className={
                   cursor === key
-                    ? "border-b-[1px] border-black flex gap-2 p-4 bg-gray-300"
+                    ? "border-b-[1px] border-black flex items-center gap-2 p-4 bg-gray-300"
                     : key === data.length - 1
                     ? "border-black flex gap-2 p-4"
-                    : "border-b-[1px] border-black flex gap-2 p-4"
+                    : "border-b-[1px] border-black flex items-center gap-2 p-4"
                 }
               >
                 <input
